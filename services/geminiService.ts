@@ -1,7 +1,7 @@
 import { GoogleGenAI as GenAIClient, Type } from "@google/genai";
 import { ContentStrategy, StrategySchema, SubTopic, ComplexityLevel } from "../types";
 
-const apiKey = process.env.API_KEY || '';
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 const ai = new GenAIClient({ apiKey });
 
 // System instruction for the "Interviewer" persona
@@ -111,7 +111,7 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
 
     if (!response.text) return [];
 
-    const cleanJson = response.text.replace(/```json / g, '').replace(/```/g, '').trim();
+    const cleanJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Error generating subtopics:", error);
