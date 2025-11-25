@@ -1,18 +1,18 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI as GenAIClient, Type } from "@google/genai";
 import { ContentStrategy, StrategySchema, SubTopic, ComplexityLevel } from "../types";
 
 const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GenAIClient({ apiKey });
 
 // System instruction for the "Interviewer" persona
 const INTERVIEWER_SYSTEM_INSTRUCTION = `
 Você é um Diretor Editorial experiente. 
-O usuário JÁ SELECIONOU um sub-tópico e um NÍVEL DE COMPLEXIDADE.
+O usuário JÁ SELECIONOU um sub - tópico e um NÍVEL DE COMPLEXIDADE.
 Seu objetivo é obter APENAS os detalhes finais: opiniões polêmicas, dados específicos ou a "voz" única do usuário.
 
-Regras:
-1. Seja OBJETIVO. Não enrole.
-2. Respeite o Nível de Complexidade escolhido (Básico: seja didático; Avançado: fale de igual para igual).
+  Regras:
+1. Seja OBJETIVO.Não enrole.
+2. Respeite o Nível de Complexidade escolhido(Básico: seja didático; Avançado: fale de igual para igual).
 3. Faça no máximo 1 ou 2 perguntas de alta precisão antes de permitir a geração.
 4. Se o usuário der uma resposta curta, aceite e avance.
 
@@ -33,58 +33,58 @@ IDIOMA DE SAÍDA: PORTUGUÊS DO BRASIL.
 `;
 
 export const generateDetailedAgenda = async (topic: string, subject: string, expertise: string): Promise<string> => {
-    const model = 'gemini-2.5-flash';
-    
-    const prompt = `
-        Atue como um Assistente Editorial Sênior.
-        
-        Contexto:
-        - Assunto Macro: ${subject}
-        - Área de Atuação: ${expertise}
-        - Tópico Principal: ${topic}
+  const model = 'gemini-2.5-flash';
 
-        Tarefa:
-        Escreva uma PAUTA DETALHADA (descrição curta e rica) de até 200 caracteres para este tópico.
+  const prompt = `
+        Atue como um Assistente Editorial Sênior.
+
+  Contexto:
+- Assunto Macro: ${subject}
+- Área de Atuação: ${expertise}
+- Tópico Principal: ${topic}
+
+Tarefa:
+        Escreva uma PAUTA DETALHADA(descrição curta e rica) de até 200 caracteres para este tópico.
         A pauta deve ser específica, técnica e direta, indicando o que deve ser abordado.
         
         Exemplo de Saída: "Explorar o impacto da IA na triagem de pacientes, citando redução de 30% no tempo de espera e novos protocolos de compliance."
 
-        SAÍDA (Máx 200 chars):
-    `;
+SAÍDA(Máx 200 chars):
+`;
 
-    try {
-        const response = await ai.models.generateContent({
-            model,
-            contents: [{ role: 'user', parts: [{ text: prompt }] }]
-        });
-        return response.text?.trim() || "";
-    } catch (e) {
-        console.error("Error generating agenda:", e);
-        return "";
-    }
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
+    return response.text?.trim() || "";
+  } catch (e) {
+    console.error("Error generating agenda:", e);
+    return "";
+  }
 };
 
 export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubTopic[]> => {
   const model = 'gemini-2.5-flash';
-  
+
   const prompt = `
     Atue como um estrategista de conteúdo sênior.
-    Contexto:
-    - Assunto: ${strategy.subject}
-    - Tópico Geral: ${strategy.topic}
+  Contexto:
+- Assunto: ${strategy.subject}
+- Tópico Geral: ${strategy.topic}
     ${strategy.detailedAgenda ? `- Pauta Detalhada/Diretriz: ${strategy.detailedAgenda}` : ''}
-    - Área de Atuação: ${strategy.expertise}
-    - Público: ${strategy.audience}
+- Área de Atuação: ${strategy.expertise}
+- Público: ${strategy.audience}
 
-    Gere exatamente 10 sugestões de sub-tópicos (ângulos específicos) derivados desse contexto.
-    Para cada sub-tópico, forneça:
-    1. Um Título chamativo.
+    Gere exatamente 10 sugestões de sub - tópicos(ângulos específicos) derivados desse contexto.
+    Para cada sub - tópico, forneça:
+1. Um Título chamativo.
     2. Uma descrição curta de até 100 caracteres explicando o viés.
 
     Retorne APENAS um JSON array neste formato:
-    [
-      { "title": "...", "description": "..." }
-    ]
+[
+  { "title": "...", "description": "..." }
+]
   `;
 
   try {
@@ -111,7 +111,7 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
 
     if (!response.text) return [];
 
-    const cleanJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const cleanJson = response.text.replace(/```json / g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Error generating subtopics:", error);
@@ -120,18 +120,18 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
 };
 
 export const generateComplexityApproach = async (strategy: ContentStrategy, level: ComplexityLevel): Promise<string> => {
-    const model = 'gemini-2.5-flash';
-    
-    let personaInstruction = "";
-    if (level === 'basic') {
-        personaInstruction = "Você é um Professor Especialista em Fundamentos. Seu foco é clareza, definições precisas, evitar jargões complexos sem explicação e construir uma base sólida para iniciantes. Explique o 'O QUE' e o 'PORQUÊ'.";
-    } else if (level === 'intermediate') {
-        personaInstruction = "Você é um Consultor Prático Sênior. Seu foco é a aplicação, 'COMO FAZER', melhores práticas de mercado, estudos de caso e resolução de problemas comuns. O público já conhece o básico.";
-    } else {
-        personaInstruction = "Você é um Visionário Disruptivo e Analista de Dados. Seu foco é tendências futuras, métricas complexas, controvérsias do setor, inovação e desafiar o status quo. Fale de igual para igual com executivos.";
-    }
+  const model = 'gemini-2.5-flash';
 
-    const prompt = `
+  let personaInstruction = "";
+  if (level === 'basic') {
+    personaInstruction = "Você é um Professor Especialista em Fundamentos. Seu foco é clareza, definições precisas, evitar jargões complexos sem explicação e construir uma base sólida para iniciantes. Explique o 'O QUE' e o 'PORQUÊ'.";
+  } else if (level === 'intermediate') {
+    personaInstruction = "Você é um Consultor Prático Sênior. Seu foco é a aplicação, 'COMO FAZER', melhores práticas de mercado, estudos de caso e resolução de problemas comuns. O público já conhece o básico.";
+  } else {
+    personaInstruction = "Você é um Visionário Disruptivo e Analista de Dados. Seu foco é tendências futuras, métricas complexas, controvérsias do setor, inovação e desafiar o status quo. Fale de igual para igual com executivos.";
+  }
+
+  const prompt = `
         ${personaInstruction}
 
         Tarefa: Crie uma ESTRUTURA DE CONTEÚDO (Outline) para o seguinte tema:
@@ -147,20 +147,20 @@ export const generateComplexityApproach = async (strategy: ContentStrategy, leve
         Não escreva o artigo ainda, apenas a estratégia de abordagem didática.
     `;
 
-    const response = await ai.models.generateContent({
-        model,
-        contents: prompt
-    });
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt
+  });
 
-    return response.text || "";
+  return response.text || "";
 };
 
 export const analyzeBriefingState = async (
   strategy: ContentStrategy,
   chatHistory: { role: string; parts: { text: string }[] }[]
 ) => {
-  const model = 'gemini-2.5-flash'; 
-  
+  const model = 'gemini-2.5-flash';
+
   const context = `
     Contexto da Pauta:
     Assunto Recorrente: ${strategy.subject}
@@ -195,7 +195,7 @@ export const generateFinalContent = async (
   chatHistory: { role: string; parts: { text: string }[] }[]
 ) => {
   // Use Pro model for the heavy lifting text generation
-  const model = 'gemini-3-pro-preview'; 
+  const model = 'gemini-3-pro-preview';
 
   const prompt = `
     Escreva a peça de conteúdo final.
@@ -230,7 +230,7 @@ export const generateFinalContent = async (
     config: {
       systemInstruction: WRITER_SYSTEM_INSTRUCTION,
       tools: tools,
-      thinkingConfig: { thinkingBudget: 1024 }, 
+      thinkingConfig: { thinkingBudget: 1024 },
     }
   });
 
@@ -241,8 +241,8 @@ export const generateFinalContent = async (
 };
 
 export const generateInitialQuestion = async (strategy: ContentStrategy) => {
-    const model = 'gemini-2.5-flash';
-    const prompt = `
+  const model = 'gemini-2.5-flash';
+  const prompt = `
       Contexto:
       O usuário quer escrever sobre: "${strategy.selectedSubTopic}".
       Pauta Base: "${strategy.detailedAgenda}".
@@ -258,18 +258,18 @@ export const generateInitialQuestion = async (strategy: ContentStrategy) => {
       Responda em Português do Brasil.
     `;
 
-    const response = await ai.models.generateContent({
-        model,
-        contents: prompt
-    });
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt
+  });
 
-    return response.text;
+  return response.text;
 }
 
 export const refineContent = async (currentContent: string, instruction: string): Promise<string> => {
-    const model = 'gemini-2.5-flash'; // Use fast model for edits
+  const model = 'gemini-2.5-flash'; // Use fast model for edits
 
-    const prompt = `
+  const prompt = `
         Você é um Editor Sênior.
         
         INSTRUÇÃO DE EDIÇÃO: "${instruction}"
@@ -285,10 +285,10 @@ export const refineContent = async (currentContent: string, instruction: string)
         SAÍDA: Apenas o novo texto em Markdown.
     `;
 
-    const response = await ai.models.generateContent({
-        model,
-        contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });
+  const response = await ai.models.generateContent({
+    model,
+    contents: [{ role: 'user', parts: [{ text: prompt }] }]
+  });
 
-    return response.text || currentContent;
+  return response.text || currentContent;
 };
