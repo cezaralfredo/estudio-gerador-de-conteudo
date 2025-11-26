@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContentStrategy, ComplexityLevel } from '../types';
 import { generateComplexityApproach } from '../services/geminiService';
 import { BookOpen, Hammer, BrainCircuit, ArrowRight, ArrowLeft, Loader2, MessageSquare, FileText } from 'lucide-react';
@@ -17,6 +17,20 @@ const SpecificitySelector: React.FC<Props> = ({ strategy, onConfirmLevel, onGoTo
   const [selectedLevel, setSelectedLevel] = useState<ComplexityLevel | null>(null);
   const [loading, setLoading] = useState(false);
   const [approach, setApproach] = useState<string>("");
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        setAiAvailable(Boolean(data?.hasKey));
+      } catch (_) {
+        setAiAvailable(false);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleSelectLevel = async (level: ComplexityLevel) => {
     setSelectedLevel(level);
@@ -76,11 +90,14 @@ const SpecificitySelector: React.FC<Props> = ({ strategy, onConfirmLevel, onGoTo
           >
             &larr; Voltar para Ângulos
           </button>
-          <h2 className="text-3xl font-serif font-bold text-white mb-2">Nível de Profundidade</h2>
+          <h2 className="text-3xl font-serif font-bold text白 mb-2">Nível de Profundidade</h2>
           <p className="text-slate-400">
             Como você quer abordar o tema <span className="text-brand-400">"{strategy.selectedSubTopic}"</span>?
             Nossos agentes especialistas adaptarão o conteúdo para o nível escolhido.
           </p>
+          {aiAvailable === false && (
+            <span className="text-[11px] text-amber-500">IA desativada — usando fallback</span>
+          )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
