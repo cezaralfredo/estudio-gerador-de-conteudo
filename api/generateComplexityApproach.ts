@@ -19,7 +19,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const prompt = `
         ${personaInstruction}
 
-        Tarefa: Estruture uma ABORDAGEM DE CONTEÚDO (outline e texto explicativo) em Markdown para o tema abaixo, obedecendo estritamente o nível (${level}).
+        Tarefa: Atue como FILTRO EDITORIAL e ARQUITETO DE CONTEÚDO.
+        Traga informações com Assunto Principal, Tópicos e Sub-tópicos bem estruturados, complementados por PARÁGRAFOS robustos, contextuais e explicativos sobre as questões solicitadas pelo usuário, obedecendo estritamente o nível (${level}).
 
         Contexto:
         - Assunto Principal: ${strategy.subject}
@@ -31,65 +32,80 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ${strategy.format ? `- Formato Alvo: ${strategy.format}` : ''}
         ${strategy.brandVoice ? `- Voz/Persona: ${strategy.brandVoice}` : ''}
 
-        Regras de Profundidade (seguir à risca):
-        - Nível "basic": foco em fundamentos, definições precisas, analogias claras; explique “o que” e “porquê”.
-        - Nível "intermediate": foco em “como fazer”, passos, decisões, melhores práticas e troubleshooting.
-        - Nível "advanced": foco em análise crítica, métricas complexas, governança, tendências e controvérsias.
+        Modo Filtro (relevância e coerência):
+        - Analise as questões, intenções e necessidades do usuário.
+        - Selecione e traga apenas informações relevantes ao escopo; descarte o que for periférico.
+        - Evite redundâncias; consolide pontos próximos e aponte interdependências.
+        - Se algo for potencialmente útil mas fora do escopo, sinalize em “Notas” e não misture com o corpo principal.
 
-        Exigências de qualidade:
-        - Rigor acadêmico nas explicações: conceitos corretos, termos técnicos do domínio, frameworks e critérios.
-        - Contextualização adequada: conecte o assunto ao contexto de ${strategy.expertise} e ao ângulo ${strategy.selectedSubTopic}.
-        - Relações lógicas: estabeleça relações entre tópicos e sub-tópicos; evidencie dependências e consequências.
-        - Referências: quando aplicável, cite fontes confiáveis (papers, relatórios, normas) em uma seção “Referências”.
-        - Linguagem técnica apropriada ao ${strategy.audience || 'público'}; evite generalidades e jargões sem definição.
+        Regras de Profundidade:
+        - “basic”: fundamentos, definições precisas, analogias claras; foque em “o que” e “porquê”.
+        - “intermediate”: “como fazer”, etapas, decisões, melhores práticas e troubleshooting.
+        - “advanced”: análise crítica, métricas complexas, governança, tendências e controvérsias.
 
-        Estrutura (Markdown):
+        Exigências de Qualidade:
+        - Rigor acadêmico: conceitos corretos, terminologia do domínio, frameworks e critérios.
+        - Contextualização: conecte o assunto ao contexto de ${strategy.expertise} e ao ângulo ${strategy.selectedSubTopic}.
+        - Relações lógicas: estabeleça causa/efeito, dependências e sequência lógica.
+        - Referências: quando aplicável, cite fontes confiáveis (papers, relatórios, normas).
+        - Linguagem técnica adequada ao ${strategy.audience || 'público'}; evite generalidades e jargões sem definição.
+
+        Estrutura de Saída (Markdown):
         1) Assunto Principal
-           - Definição clara e bem delimitada do escopo
-           - Objetivos e motivação no contexto de ${strategy.expertise}
-           - Premissas e critérios de sucesso
+           - Definição clara do escopo e objetivo
+           - Motivação e relevância em ${strategy.expertise}
+           - Critérios de sucesso
            - Transição: indique como os tópicos organizam o entendimento
 
         2) Tópicos (hierarquia)
-           - Organize por níveis (H2/H3/H4) com bullets
+           - Organize em H2/H3/H4 com bullets
            - Para cada tópico: propósito, escopo, entradas/saídas
-           - Relacione dependências e ordem lógica de leitura
-           - Transição: explique a ligação com os sub-tópicos
+           - Dependências e ordem lógica de leitura
+           - Transição para Sub-tópicos
 
         3) Sub-tópicos (detalhados e relevantes)
-           - Para cada sub-tópico: definição, motivação, decisões-chave
-           - Inclua exemplos concretos (no domínio de ${strategy.expertise})
-           - Mencione métricas/KPIs, riscos e compliance quando aplicável
-           - Transição: conecte com os parágrafos explicativos
+           - Definição, motivação e decisões-chave
+           - Exemplos concretos no domínio de ${strategy.expertise}
+           - Métricas/KPIs, riscos e compliance (quando aplicável)
+           - Transição para Parágrafos Explicativos
 
-        4) Parágrafos Explicativos (completos e fundamentados)
-           - Desenvolva os pontos críticos com argumentos, evidências e dados
-           - No “basic”: fundamentos e analogias; no “intermediate”: etapas e trade-offs; no “advanced”: análise crítica, benchmarks e governança
-           - Use transições suaves, conectando seções e evitando saltos de lógica
-           - Inclua exemplos práticos ou mini-casos (quando útil)
+        4) Parágrafos Explicativos (robustos, contextuais)
+           - Desenvolva pontos críticos com argumentos, evidências e dados
+           - Adapte ao nível: fundamentos (basic), etapas/trade-offs (intermediate), análise/benchmarks/governança (advanced)
+           - Use transições suaves, conectando seções sem saltos de lógica
+           - Inclua mini-casos ou exemplos práticos quando útil
 
-        5) Preparação para o próximo agente
-           - Indique blocos/segmentos prontos para:
-             - Refinar formatação (manter Markdown consistente)
-             - Ajustar tom e estilo (apontar onde adaptar à ${strategy.brandVoice || 'voz'} e ao ${strategy.format || 'formato'})
-             - Compilar para o formato final (sinalize trechos que viram seções, capítulos ou slides)
-           - Garanta integridade das informações: não deixe lacunas ou contradições
+        5) Conexões e Lógica
+           - Mapa de relações entre tópicos/sub-tópicos
+           - Implicações, limitações e próximos passos
 
-        6) Diretrizes de verificação e adaptabilidade
-           - Abrangência: confirme que tudo está dentro do escopo definido
-           - Precisão: destaque afirmações verificáveis; cite fontes quando aplicável
-           - Adaptabilidade: a estrutura deve permitir conversão para ${strategy.format || 'formato escolhido'} sem perda de qualidade
-           - Checklist final de integridade (bullets)
+        6) Métricas, Riscos e Compliance (se aplicável)
+           - KPIs relevantes ao domínio
+           - Riscos típicos e mitigação
+           - Requisitos regulatórios/compliance
 
         7) Referências (quando aplicável)
-           - Liste fontes confiáveis (paper, norma, relatório de mercado, documentação oficial)
-           - Use formato: Autor/Título/Link (curto)
+           - Autor/Título/Link (curto), preferindo fontes confiáveis
+
+        8) Preparação para o Próximo Agente
+           - Blocos prontos para refinamento de formatação (Markdown consistente)
+           - Pontos onde ajustar tom/estilo à ${strategy.brandVoice || 'voz'} e ao ${strategy.format || 'formato'}
+           - Sinalização de trechos que viram seções/capítulos/slides
+           - Garantia de integridade: sem lacunas ou contradições
+
+        9) Checklist de Integridade
+           - Abrangência dentro do escopo
+           - Precisão e verificabilidade
+           - Adaptabilidade ao formato de saída escolhido (${strategy.format || 'formato'})
+           - Coesão e transições bem resolvidas
 
         Instruções de Estilo:
         - Use Markdown com cabeçalhos hierárquicos e bullets bem formatados.
         - Mantenha coesão textual e transições suaves entre seções.
         - Utilize linguagem técnica apropriada ao nível (${level}) e ao domínio de ${strategy.expertise}.
-        - NÃO escreva o conteúdo final completo; entregue uma abordagem aprofundada e parágrafos explicativos que o próximo agente possa refinar.
+        - Entregue a abordagem e os parágrafos explicativos; NÃO escreva o conteúdo final completo.
+
+        IDIOMA: Português do Brasil.
     `;
     const response = await ai.models.generateContent({ model, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
     return res.json({ text: response.text || '' });
