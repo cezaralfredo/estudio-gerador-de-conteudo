@@ -346,6 +346,13 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
+        {stage === AppStage.CALENDAR && (
+          <div className="mb-4 text-slate-400 text-sm">
+            <p>Clique uma data no calendário e forneça dados relevantes para gerar seu conteúdo.</p>
+            <p className="mt-1">A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.</p>
+          </div>
+        )}
+
         {renderStepper()}
 
         {stage === AppStage.CALENDAR && (

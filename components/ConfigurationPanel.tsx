@@ -17,6 +17,7 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     const checkStatus = async () => {
       try {
         const res = await fetch('/api/status');
@@ -73,13 +74,8 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
             <h2 className="text-3xl font-serif font-bold text-white">Estúdio Gerador de Conteúdo</h2>
             <p className="text-slate-400 text-sm">Centralize o planejamento, status e estratégia do seu conteúdo.</p>
         </div>
-        <div className="flex gap-3">
-             <button
-                onClick={onSaveDraft}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
-            >
-                <Save size={16} /> Salvar Rascunho
-            </button>
+        <div className="text-[11px] text-slate-500">
+          A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.
         </div>
       </div>
 
@@ -319,6 +315,12 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
 
             {/* Main Action */}
             <div className="mt-8 flex justify-end items-center gap-4 border-t border-slate-800 pt-6">
+                <button
+                  onClick={onSaveDraft}
+                  className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
+                >
+                  <Save size={16} /> Salvar Rascunho
+                </button>
                 {!isFormValid && (
                     <p className="text-sm text-amber-500 animate-pulse text-right">
                         Preencha Tópico, Assunto, Público e Área de Atuação.
