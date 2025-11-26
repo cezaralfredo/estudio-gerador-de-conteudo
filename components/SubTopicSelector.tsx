@@ -14,6 +14,7 @@ const SubTopicSelector: React.FC<Props> = ({ strategy, onSelect, onBack }) => {
   const [subTopics, setSubTopics] = useState<SubTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
 
   const fetchTopics = async () => {
     setLoading(true);
@@ -39,6 +40,17 @@ const SubTopicSelector: React.FC<Props> = ({ strategy, onSelect, onBack }) => {
     if (subTopics.length === 0) {
         fetchTopics();
     }
+    // Check AI status
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        setAiAvailable(Boolean(data?.hasKey));
+      } catch (_) {
+        setAiAvailable(false);
+      }
+    };
+    checkStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -63,6 +75,9 @@ const SubTopicSelector: React.FC<Props> = ({ strategy, onSelect, onBack }) => {
              <button onClick={fetchTopics} className="text-sm text-brand-500 hover:text-brand-400 flex items-center gap-2 border border-brand-500/20 px-3 py-1.5 rounded-lg hover:bg-brand-500/10 transition-colors">
                 <RefreshCw size={14} /> Gerar novos ângulos
              </button>
+        )}
+        {!loading && aiAvailable === false && (
+          <span className="ml-3 text-[11px] text-amber-500">IA desativada — usando fallback</span>
         )}
       </div>
 

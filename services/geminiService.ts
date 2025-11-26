@@ -63,7 +63,7 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
     try {
       const parsed = JSON.parse(raw);
       const valid = Array.isArray(parsed) ? parsed.filter((it: any) => it && typeof it.title === 'string' && typeof it.description === 'string') : [];
-      return valid.slice(0, 10);
+      return valid.length > 0 ? valid.slice(0, 10) : buildHeuristicSubTopics(strategy);
     } catch (e) {
       // Fallback: tentar extrair pares "title - description" por linhas
       const lines = raw.split(/\n+/).map(l => l.trim()).filter(Boolean);
@@ -75,13 +75,32 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
         }
         if (items.length >= 10) break;
       }
-      return items;
+      return items.length > 0 ? items : buildHeuristicSubTopics(strategy);
     }
   } catch (error) {
     console.error('❌ Error generating subtopics:', error);
-    return [];
+    return buildHeuristicSubTopics(strategy);
   }
 };
+
+function buildHeuristicSubTopics(strategy: ContentStrategy): SubTopic[] {
+  const topic = strategy.topic || 'Tema';
+  const subject = strategy.subject || 'Assunto';
+  const area = strategy.expertise || 'Área';
+  const base = [
+    { title: `Benchmark de ${topic} em ${area}`, description: `Comparar líderes, lacunas e oportunidades.` },
+    { title: `KPIs essenciais para ${topic}`, description: `Definir métricas, metas e monitoramento.` },
+    { title: `Casos reais em ${area}`, description: `Estudos de caso práticos e lições aprendidas.` },
+    { title: `ROI e custos de ${topic}`, description: `Estimativas, alavancas de eficiência e payback.` },
+    { title: `Riscos e compliance em ${subject}`, description: `Mapear riscos, normas e mitigação.` },
+    { title: `Stack e ferramentas para ${topic}`, description: `Tecnologias, integrações e critérios de escolha.` },
+    { title: `Roadmap 30/60/90 dias`, description: `Plano de adoção por fases e resultados esperados.` },
+    { title: `Erros comuns em ${topic}`, description: `Antipadrões, armadilhas e como evitar.` },
+    { title: `Estratégias avançadas`, description: `Técnicas para escala, automação e governança.` },
+    { title: `Visão contrarianista`, description: `Argumento oposto bem fundamentado para debate.` }
+  ];
+  return base.slice(0, 10);
+}
 
 export const generateComplexityApproach = async (strategy: ContentStrategy, level: ComplexityLevel): Promise<string> => {
   try {
