@@ -76,9 +76,7 @@ const SubTopicSelector: React.FC<Props> = ({ strategy, onSelect, onBack }) => {
                 <RefreshCw size={14} /> Gerar novos ângulos
              </button>
         )}
-        {!loading && aiAvailable === false && (
-          <span className="ml-3 text-[11px] text-amber-500">IA desativada — usando fallback</span>
-        )}
+        
       </div>
 
       {/* Loading State */}

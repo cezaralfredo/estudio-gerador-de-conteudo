@@ -121,6 +121,109 @@ export const generateComplexityApproach = async (strategy: ContentStrategy, leve
   }
 };
 
+function bullets(arr: string[]): string {
+  return arr.map(it => `- ${it}\n`).join('');
+}
+
+function deriveDomainHints(area: string, topic: string, sub: string, subject: string) {
+  const a = (area || '').toLowerCase();
+  let kpisBasic = ['Precisão básica', 'Tempo', 'Custo'];
+  let kpisIntermediate = ['Performance', 'Qualidade', 'Custo'];
+  let kpisAdvanced = ['Indicadores de risco', 'Governança', 'Eficiência em escala'];
+  let risks = ['Erros comuns', 'Limites de escopo'];
+  let compliance = ['LGPD', 'Boas práticas de segurança'];
+  let caseDesc = `Aplicação de ${topic} em ${subject} para ${sub} em ${area}`;
+  if (/marketing|growth|ads|tráfego|mkt/.test(a)) {
+    kpisBasic = ['CTR', 'CVR', 'CAC', 'LTV'];
+    kpisIntermediate = ['ROAS', 'Frequência', 'Uplift de A/B'];
+    kpisAdvanced = ['Incremental lift', 'Atribuição multi-touch', 'MMM'];
+    risks = ['Saturação de público', 'Viés de segmentação', 'Fraude de clique'];
+    compliance = ['LGPD', 'Consentimento e opt-in', 'Políticas de plataforma'];
+    caseDesc = `Campanha de ${topic} em ${area} focada em ${sub}, elevando CTR e ROAS`;
+  } else if (/engenharia|software|devops|sre|backend|frontend/.test(a)) {
+    kpisBasic = ['Latência p95', 'Taxa de erro', 'Throughput', 'Uptime'];
+    kpisIntermediate = ['SLIs/SLOs', 'MTTR', 'Uso de CPU e memória'];
+    kpisAdvanced = ['Latência p99', 'Custo por requisição', 'Resiliência em falhas'];
+    risks = ['Race conditions', 'Vazamento de memória', 'Backpressure'];
+    compliance = ['OWASP', 'Licenças de software', 'LGPD'];
+    caseDesc = `Serviço de ${subject} com ${topic} reduz p95 e erros em ${area}`;
+  } else if (/dados|data|analytics|ml|ia|machine learning|ciência de dados/.test(a)) {
+    kpisBasic = ['Acurácia', 'Precisão', 'Recall', 'F1', 'MAE'];
+    kpisIntermediate = ['ROC-AUC', 'Calibração', 'Drift de dados'];
+    kpisAdvanced = ['Lift incremental', 'PSI', 'SHAP/interpretabilidade'];
+    risks = ['Overfitting', 'Data leakage', 'Viés algorítmico'];
+    compliance = ['LGPD', 'Ética e explicabilidade'];
+    caseDesc = `Modelo de ${topic} aplicado a ${sub} em ${area}, elevando F1 e reduzindo drift`;
+  } else if (/finan|finance|banco|crédito|invest/.test(a)) {
+    kpisBasic = ['ROI', 'Churn', 'Inadimplência'];
+    kpisIntermediate = ['NPL', 'Spread', 'Loss rate'];
+    kpisAdvanced = ['VaR', 'Expected Shortfall', 'Stress testing'];
+    risks = ['Risco de crédito', 'Fraude', 'Liquidez'];
+    compliance = ['Bacen', 'CVM', 'AML/KYC'];
+    caseDesc = `Estratégia de ${topic} em ${area} reduz inadimplência e melhora ROI`;
+  } else if (/saúde|health|med/.test(a)) {
+    kpisBasic = ['Sensibilidade', 'Especificidade', 'PPV', 'NPV'];
+    kpisIntermediate = ['AUC', 'Tempo de atendimento', 'Taxa de readmissão'];
+    kpisAdvanced = ['Risk adjustment', 'Compliance clínica', 'Segurança do paciente'];
+    risks = ['Viés clínico', 'Privacidade de dados', 'Generalização limitada'];
+    compliance = ['LGPD', 'Ética médica', 'ANS'];
+    caseDesc = `Protocolo com ${topic} em ${area} melhora ${sub} mantendo segurança do paciente`;
+  } else if (/educa|ensino|learning|edtech/.test(a)) {
+    kpisBasic = ['Retenção', 'Taxa de conclusão', 'NPS'];
+    kpisIntermediate = ['Tempo on-task', 'Engajamento', 'Learning gain'];
+    kpisAdvanced = ['Adaptive mastery', 'Causal impact', 'Coortes'];
+    risks = ['Viés de avaliação', 'Acessibilidade', 'Desmotivação'];
+    compliance = ['Acessibilidade', 'LGPD', 'COPPA'];
+    caseDesc = `Curso de ${subject} usando ${topic} eleva conclusão e engajamento em ${area}`;
+  } else if (/ecom|varejo|retail/.test(a)) {
+    kpisBasic = ['Taxa de conversão', 'Ticket médio', 'Abandono de carrinho'];
+    kpisIntermediate = ['Tempo de entrega', 'Frete', 'Recompra'];
+    kpisAdvanced = ['LTV', 'Retenção por coorte', 'RFM'];
+    risks = ['Ruptura de estoque', 'Fraude', 'Devolução'];
+    compliance = ['LGPD', 'PCI-DSS'];
+    caseDesc = `Loja em ${area} aplica ${topic} ao ${sub} e aumenta conversão e LTV`;
+  }
+  return { kpisBasic, kpisIntermediate, kpisAdvanced, risks, compliance, caseDesc };
+}
+
+function buildHeuristicFinalContent(strategy: ContentStrategy, chatHistory: { role: string; parts: { text: string }[] }[]): string {
+  const subject = strategy.subject || 'Assunto';
+  const topic = strategy.topic || 'Tópico';
+  const sub = strategy.selectedSubTopic || 'Ângulo';
+  const area = strategy.expertise || 'Área';
+  const audience = strategy.audience || 'Público';
+  const format = strategy.format || 'Formato';
+  const tone = strategy.tone || 'Informativo e Neutro';
+  const approach = (strategy.generatedApproach || '').trim();
+  const hints = deriveDomainHints(area, topic, sub, subject);
+  const briefingNote = Array.isArray(chatHistory) && chatHistory.length > 0 ? 'Observações do briefing incorporadas.' : 'Sem briefing adicional; usando estrutura e contexto.';
+
+  let intro = `# ${topic}\n\n` +
+    `**${sub}** • ${area} • ${audience} • ${format} • Tom: ${tone}\n\n` +
+    `${briefingNote}\n\n`;
+
+  if (approach) {
+    intro += `> Estrutura aprovada (resumo):\n\n${approach}\n\n`;
+  }
+
+  const body = (
+    `## Introdução\n` +
+    `Apresente por que ${topic} em ${area} importa para ${audience}, contextualizando ${sub} com objetivos claros.\n\n` +
+    `## Desenvolvimento\n` +
+    `Descreva o que fazer, como fazer e decisões-chave ligadas a ${sub}. Inclua termos do domínio e exemplos práticos.\n\n` +
+    `### Métricas e KPIs\n` +
+    bullets(hints.kpisIntermediate) + `\n` +
+    `### Riscos e Compliance\n` +
+    bullets(hints.risks) + bullets(hints.compliance) + `\n` +
+    `### Estudo de Caso\n` +
+    `- ${hints.caseDesc}\n\n` +
+    `## Conclusão e Próximos Passos\n` +
+    `Sintetize ganhos esperados e proponha um plano objetivo de adoção incremental (30/60/90).\n`
+  );
+
+  return intro + body;
+}
+
 function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLevel): string {
   const subject = strategy.subject || 'Assunto';
   const topic = strategy.topic || 'Tópico';
@@ -128,6 +231,7 @@ function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLeve
   const area = strategy.expertise || 'Área';
   const audience = strategy.audience || 'Público';
   const format = strategy.format || 'Formato';
+  const hints = deriveDomainHints(area, topic, sub, subject);
 
   const intro = `## Abordagem (${level})\n\n` +
     `**Visão Geral**\n` +
@@ -143,19 +247,19 @@ function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLeve
       `### Fundamentos Essenciais\n` +
       `- Definições e escopo do tema\n` +
       `- Conceitos-chave com analogias acessíveis\n` +
-      `- Termos comuns e traduções sem jargão\n\n` +
+      `- Termos do domínio em ${area} sem jargão\n\n` +
       `### Estrutura por Tópicos\n` +
       `- Contextualização de ${sub}\n` +
       `- Componentes principais do problema\n` +
       `- Mini-exemplos didáticos passo a passo\n\n` +
       `### KPIs Simples\n` +
-      `- Precisão básica, tempo, custo\n` +
+      bullets(hints.kpisBasic) +
       `- Indicadores de compreensão e retenção\n\n` +
       `### Riscos e Limitações\n` +
-      `- Erros comuns de iniciantes\n` +
+      bullets(hints.risks) +
       `- Limites de escopo e falsas correlações\n\n` +
       `### Estudo de Caso (Resumo)\n` +
-      `- Situação real em ${area} e como ${topic} ajudou\n\n` +
+      `- ${hints.caseDesc}\n\n` +
       `### Roadmap 30/60/90\n` +
       `- 30: assimilação de conceitos\n` +
       `- 60: aplicações guiadas\n` +
@@ -178,13 +282,13 @@ function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLeve
       `- Decisões e trade-offs\n` +
       `- Padrões e antipadrões\n\n` +
       `### KPIs e Sucesso\n` +
-      `- Métricas de performance, qualidade e custo\n` +
+      bullets(hints.kpisIntermediate) +
       `- SLAs e observabilidade\n\n` +
       `### Riscos e Troubleshooting\n` +
-      `- Falhas recorrentes e diagnósticos\n` +
+      bullets(hints.risks) +
       `- Mitigações e planos de contingência\n\n` +
       `### Estudo de Caso (Resumo)\n` +
-      `- Implementação prática de ${sub} em ${area}\n\n` +
+      `- ${hints.caseDesc}\n\n` +
       `### Roadmap 30/60/90\n` +
       `- 30: piloto controlado\n` +
       `- 60: expansão e otimização\n` +
@@ -206,13 +310,13 @@ function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLeve
     `- Benchmarks e métricas complexas\n` +
     `- Modelos de decisão e custo/benefício\n\n` +
     `### KPIs e Governança\n` +
-    `- Indicadores de risco, compliance e performance avançada\n` +
+    bullets(hints.kpisAdvanced) +
     `- Comitês e políticas\n\n` +
     `### Riscos e Compliance\n` +
-    `- Regulação aplicável e mitigação\n` +
+    bullets(hints.compliance) +
     `- Resiliência e continuidade\n\n` +
     `### Estudo de Caso (Resumo)\n` +
-    `- Implementação em ${area} com resultados mensuráveis\n\n` +
+    `- ${hints.caseDesc}\n\n` +
     `### Roadmap 30/60/90\n` +
     `- 30: alinhamento executivo e arquitetura\n` +
     `- 60: rollout com governança\n` +
@@ -244,13 +348,23 @@ export const generateFinalContent = async (
   strategy: ContentStrategy,
   chatHistory: { role: string; parts: { text: string }[] }[]
 ) => {
-  const res = await fetch('/api/generateFinalContent', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ strategy, chatHistory })
-  });
-  const data = await res.json();
-  return { text: data?.text || '', groundingMetadata: data?.groundingMetadata };
+  try {
+    const res = await fetch('/api/generateFinalContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ strategy, chatHistory })
+    });
+    if (!res.ok) {
+      const text = buildHeuristicFinalContent(strategy, chatHistory);
+      return { text, groundingMetadata: null };
+    }
+    const data = await res.json();
+    const text = (data?.text || '').trim();
+    return { text: text || buildHeuristicFinalContent(strategy, chatHistory), groundingMetadata: data?.groundingMetadata };
+  } catch (e) {
+    const text = buildHeuristicFinalContent(strategy, chatHistory);
+    return { text, groundingMetadata: null };
+  }
 };
 
 export const generateInitialQuestion = async (strategy: ContentStrategy) => {

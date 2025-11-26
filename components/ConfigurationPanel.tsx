@@ -175,9 +175,7 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
                         {generatingAgenda ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12} />}
                         {generatingAgenda ? 'Gerando...' : 'Gerar com IA'}
                     </button>
-                    {aiAvailable === false && (
-                      <span className="text-[11px] text-amber-500">IA desativada — usando fallback</span>
-                    )}
+                    
                     </div>
                 </div>
                 <textarea 

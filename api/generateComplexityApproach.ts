@@ -29,6 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ${strategy.format ? `- Formato: ${strategy.format}` : ''}
         ${strategy.brandVoice ? `- Voz/Persona: ${strategy.brandVoice}` : ''}
 
+        Inclua descrições intrínsecas ao assunto, detalhes específicos do domínio e exemplos inerentes ao contexto de ${strategy.expertise}. Evite generalidades; especifique termos técnicos, métricas e frameworks relevantes ao domínio.
+
         Estruture entre 600 e 900 palavras com seções claras:
         1) Visão Geral e Objetivos
         2) Fundamentos/Prática/Análise (conforme nível)

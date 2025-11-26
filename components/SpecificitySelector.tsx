@@ -95,9 +95,7 @@ const SpecificitySelector: React.FC<Props> = ({ strategy, onConfirmLevel, onGoTo
             Como você quer abordar o tema <span className="text-brand-400">"{strategy.selectedSubTopic}"</span>?
             Nossos agentes especialistas adaptarão o conteúdo para o nível escolhido.
           </p>
-          {aiAvailable === false && (
-            <span className="text-[11px] text-amber-500">IA desativada — usando fallback</span>
-          )}
+          
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
