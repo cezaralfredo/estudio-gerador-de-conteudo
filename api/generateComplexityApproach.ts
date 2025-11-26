@@ -19,8 +19,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const prompt = `
         ${personaInstruction}
 
-        Tarefa: Atue como FILTRO EDITORIAL e ARQUITETO DE CONTEÚDO.
-        O usuário exige uma ESTRATÉGIA DE ABORDAGEM SUGERIDA que traga INFORMAÇÕES COMPLETAS, estruturadas e robustas.
+        Tarefa: Atue como um AGENTE CATALISADOR DE CONTEÚDO.
+        Sua missão é acelerar a produção entregando uma ESTRATÉGIA DE ABORDAGEM SUGERIDA completa, densa e pronta para uso.
 
         Contexto:
         - Assunto Principal: ${strategy.subject}
@@ -32,10 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ${strategy.format ? `- Formato Alvo: ${strategy.format}` : ''}
         ${strategy.brandVoice ? `- Voz/Persona: ${strategy.brandVoice}` : ''}
 
-        MODO FILTRO (Rigor e Completude):
-        1. Analise profundamente as intenções do usuário para este sub-tópico.
-        2. Filtre e elimine o irrelevante.
-        3. Entregue conteúdo COMPLETO e RELEVANTE: não apenas tópicos, mas a explicação densa e coerente deles.
+        MODO CATALISADOR (Filtro e Densidade):
+        1. Analise o pedido e traga APENAS o que é relevante e coerente.
+        2. Não entregue apenas um esqueleto. Entregue a "carne" do conteúdo.
+        3. Os PARÁGRAFOS EXPLICATIVOS são a parte mais fundamental: eles devem conter a explicação real, o argumento, o dado e o contexto.
 
         Regras de Profundidade (${level}):
         - BASIC: Fundamentos sólidos, definições claras ("O que", "Porquê"), analogias didáticas.
@@ -44,28 +44,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         ESTRUTURA DE SAÍDA OBRIGATÓRIA (Markdown):
 
-        ## 1. Assunto Principal e Contexto
-        - Definição precisa do escopo abordado.
-        - Justificativa de relevância para o público.
+        ## 1. Contextualização do Assunto
+        - Definição clara do foco.
+        - Por que isso importa agora? (Relevância)
 
-        ## 2. Estrutura de Tópicos e Sub-tópicos
-        - Hierarquia lógica (H2, H3).
-        - Organize o raciocínio de forma progressiva e didática.
+        ## 2. Estrutura Analítica (Tópicos e Sub-tópicos)
+        - Organize os tópicos de forma lógica e sequencial.
+        - Para cada Tópico, liste os Sub-tópicos essenciais.
 
-        ## 3. Parágrafos Explicativos e Robustos (O CORAÇÃO DA ESTRATÉGIA)
-        - Para cada tópico/sub-tópico principal, escreva um parágrafo completo e argumentativo.
-        - Não use placeholders. Traga a informação real, o dado, o argumento, a técnica.
-        - Conecte os pontos (coesão e lógica).
-        - Demonstre profundidade compatível com o nível ${level}.
+        ## 3. Desenvolvimento Explicativo (FUNDAMENTAL)
+        - Esta é a seção principal. Dedique 80% do seu esforço aqui.
+        - Para cada ponto estrutural acima, escreva um PARÁGRAFO ROBUSTO e CONTEXTUAL.
+        - Explique o "como", o "porquê" e as implicações.
+        - Use conectivos lógicos para garantir fluidez e coerência.
+        - Traga exemplos ou cenários compatíveis com o nível ${level}.
 
-        ## 4. Notas de Direcionamento Editorial
-        - Observações sobre o que foi filtrado/focado e porquê.
-        - Orientações de tom e estilo para a redação final.
+        ## 4. Conclusão e Próximos Passos
+        - Síntese da abordagem.
+        - Direcionamento para a execução final do texto.
 
-        Instruções Finais:
-        - Use Markdown limpo e bem formatado.
-        - Seja direto, profissional e denso.
-        - O objetivo é que esta estratégia já contenha todo o valor intelectual necessário.
+        Instruções de Estilo:
+        - Use Markdown limpo.
+        - Texto corrido e bem articulado nos parágrafos (evite excesso de bullet points isolados).
+        - Seja um especialista conversando com o público alvo.
         - IDIOMA: Português do Brasil.
     `;
     const response = await ai.models.generateContent({ model, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
