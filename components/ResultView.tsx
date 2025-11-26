@@ -59,12 +59,22 @@ const ResultView: React.FC<Props> = ({ strategy, chatHistory, onReset, onBack })
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const safeDate = (date?: string) => {
+    if (!date) return 'rascunho';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'rascunho';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  };
+
   const handleDownload = (format: 'md' | 'txt') => {
     const element = document.createElement("a");
     const mimeType = format === 'md' ? 'text/markdown' : 'text/plain';
     const file = new Blob([content], {type: mimeType});
     element.href = URL.createObjectURL(file);
-    element.download = `conteudo-${strategy.date || 'rascunho'}.${format}`;
+    element.download = `conteudo-${safeDate(strategy.date)}.${format}`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);

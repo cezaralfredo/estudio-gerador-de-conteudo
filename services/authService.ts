@@ -1,5 +1,6 @@
 import { User } from '../types';
 import { sql } from './db';
+import bcrypt from 'bcryptjs';
 
 const CURRENT_USER_KEY = 'NEXUS_CURRENT_SESSION';
 
@@ -28,10 +29,11 @@ export const AuthService = {
       }
 
       // Create user
-      // Note: In production, hash the password!
+      // Hash de senha no cliente (melhor do que plaintext; ideal é no servidor)
+      const passwordHash = await bcrypt.hash(pass, 10);
       const [newUser] = await sql`
         INSERT INTO users (name, email, password_hash, role)
-        VALUES (${name}, ${email}, ${pass}, 'user')
+        VALUES (${name}, ${email}, ${passwordHash}, 'user')
         RETURNING id, name, email, role, created_at as "createdAt"
       `;
 
@@ -55,17 +57,40 @@ export const AuthService = {
 
   login: async (email: string, pass: string): Promise<{ success: boolean; message?: string; user?: User }> => {
     try {
-      const users = await sql`
-        SELECT id, name, email, role, created_at as "createdAt" 
+      const rows = await sql`
+        SELECT id, name, email, role, created_at as "createdAt", password_hash 
         FROM users 
-        WHERE email = ${email} AND password_hash = ${pass}
+        WHERE email = ${email}
       `;
 
-      if (users.length === 0) {
+      if (rows.length === 0) {
         return { success: false, message: 'Credenciais inválidas.' };
       }
 
-      const user = users[0] as unknown as User;
+      const row = rows[0] as any;
+      let passwordMatch = false;
+      try {
+        passwordMatch = await bcrypt.compare(pass, row.password_hash);
+      } catch (_) {
+        passwordMatch = false;
+      }
+      // Fallback: se o banco possuir senhas em plaintext, aceite e faça upgrade para hash
+      if (!passwordMatch && row.password_hash === pass) {
+        const newHash = await bcrypt.hash(pass, 10);
+        await sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${row.id}`;
+        passwordMatch = true;
+      }
+      if (!passwordMatch) {
+        return { success: false, message: 'Credenciais inválidas.' };
+      }
+
+      const user: User = {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        role: row.role,
+        createdAt: row.createdAt
+      };
 
       // Update last login
       await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;

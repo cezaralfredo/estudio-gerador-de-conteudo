@@ -1,7 +1,7 @@
 import React from 'react';
 import { User } from '../types';
 import { AuthService } from '../services/authService';
-import { Users, Shield, ArrowLeft, Calendar } from 'lucide-react';
+import { Users, Shield, ArrowLeft, Calendar, Trash2, ShieldCheck } from 'lucide-react';
 
 interface Props {
     onBack: () => void;
@@ -10,6 +10,7 @@ interface Props {
 const AdminUserList: React.FC<Props> = ({ onBack }) => {
     const [users, setUsers] = React.useState<User[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [busyId, setBusyId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         const loadUsers = async () => {
@@ -19,6 +20,29 @@ const AdminUserList: React.FC<Props> = ({ onBack }) => {
         };
         loadUsers();
     }, []);
+
+    const refresh = async () => {
+        setLoading(true);
+        const data = await AuthService.getAllUsers();
+        setUsers(data);
+        setLoading(false);
+    };
+
+    const handleToggleRole = async (user: User) => {
+        setBusyId(user.id);
+        const newRole = user.role === 'admin' ? 'user' : 'admin';
+        const ok = await AuthService.updateUserRole(user.id, newRole);
+        if (ok) await refresh();
+        setBusyId(null);
+    };
+
+    const handleDelete = async (user: User) => {
+        if (!confirm(`Tem certeza que deseja excluir o usuário "${user.name}"?`)) return;
+        setBusyId(user.id);
+        const ok = await AuthService.deleteUser(user.id);
+        if (ok) await refresh();
+        setBusyId(null);
+    };
 
     if (loading) {
         return <div className="p-10 text-center text-slate-400">Carregando usuários...</div>;
@@ -57,6 +81,7 @@ const AdminUserList: React.FC<Props> = ({ onBack }) => {
                                 <th className="px-6 py-4 font-bold text-slate-400 uppercase tracking-wider">E-mail</th>
                                 <th className="px-6 py-4 font-bold text-slate-400 uppercase tracking-wider">Função</th>
                                 <th className="px-6 py-4 font-bold text-slate-400 uppercase tracking-wider">Data Cadastro</th>
+                                <th className="px-6 py-4 font-bold text-slate-400 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/50">
@@ -81,6 +106,26 @@ const AdminUserList: React.FC<Props> = ({ onBack }) => {
                                     <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
                                         <Calendar size={12} />
                                         {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleToggleRole(user)}
+                                                disabled={busyId === user.id}
+                                                className="px-3 py-1 text-xs rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 flex items-center gap-1"
+                                                title={user.role === 'admin' ? 'Remover admin' : 'Promover a admin'}
+                                            >
+                                                <ShieldCheck size={14} /> {user.role === 'admin' ? 'Demover' : 'Promover'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(user)}
+                                                disabled={busyId === user.id}
+                                                className="px-3 py-1 text-xs rounded-lg border border-red-700 bg-red-900/20 text-red-300 hover:bg-red-900/30 flex items-center gap-1"
+                                                title="Excluir usuário"
+                                            >
+                                                <Trash2 size={14} /> Excluir
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
