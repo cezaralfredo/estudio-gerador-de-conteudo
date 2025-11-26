@@ -112,6 +112,20 @@ const App: React.FC = () => {
   };
 
   const [briefingHistory, setBriefingHistory] = useState<{ role: string; parts: { text: string }[] }[]>([]);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        setAiAvailable(Boolean(data?.hasKey));
+      } catch (_) {
+        setAiAvailable(false);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleBriefingFinished = (history: { role: string; parts: { text: string }[] }[]) => {
     setBriefingHistory(history);
@@ -289,6 +303,11 @@ const App: React.FC = () => {
               </div>
               <span className="text-xl font-serif font-bold tracking-tight text-white hidden sm:block">Estúdio Gerador</span>
               <span className="text-xl font-serif font-bold tracking-tight text-white sm:hidden">Nexus</span>
+              {aiAvailable !== null && (
+                <span className={`ml-3 text-[11px] px-2 py-0.5 rounded-full border ${aiAvailable ? 'text-emerald-400 border-emerald-700 bg-emerald-900/20' : 'text-amber-400 border-amber-700 bg-amber-900/20'}`}>
+                  {aiAvailable ? 'IA ativa' : 'IA fallback'}
+                </span>
+              )}
             </div>
             
             <div className="flex items-center gap-4">
