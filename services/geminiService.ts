@@ -126,38 +126,99 @@ function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLeve
   const topic = strategy.topic || 'Tópico';
   const sub = strategy.selectedSubTopic || 'Ângulo';
   const area = strategy.expertise || 'Área';
-  const header = `## Abordagem (${level})\n\n`;
+  const audience = strategy.audience || 'Público';
+  const format = strategy.format || 'Formato';
+
+  const intro = `## Abordagem (${level})\n\n` +
+    `**Visão Geral**\n` +
+    `Tema: ${topic} • Ângulo: ${sub} • Contexto: ${area} • Público: ${audience} • Formato: ${format}\n\n`;
 
   if (level === 'basic') {
     return (
-      header +
-      `Objetivo: explicar fundamentos de ${topic} em ${area}.\n\n` +
-      `- Definições-chave e escopo do tema\n` +
-      `- Por que importa para ${subject} (${area})\n` +
-      `- Conceitos básicos com exemplos simples\n` +
+      intro +
+      `### Objetivos\n` +
+      `- Ensinar fundamentos de ${topic} aplicados a ${subject}.\n` +
+      `- Explicar por que o tema é relevante em ${area}.\n` +
+      `- Preparar o leitor para aplicações práticas simples.\n\n` +
+      `### Fundamentos Essenciais\n` +
+      `- Definições e escopo do tema\n` +
+      `- Conceitos-chave com analogias acessíveis\n` +
+      `- Termos comuns e traduções sem jargão\n\n` +
+      `### Estrutura por Tópicos\n` +
+      `- Contextualização de ${sub}\n` +
+      `- Componentes principais do problema\n` +
+      `- Mini-exemplos didáticos passo a passo\n\n` +
+      `### KPIs Simples\n` +
+      `- Precisão básica, tempo, custo\n` +
+      `- Indicadores de compreensão e retenção\n\n` +
+      `### Riscos e Limitações\n` +
       `- Erros comuns de iniciantes\n` +
-      `- Próximos passos e materiais de referência\n`
+      `- Limites de escopo e falsas correlações\n\n` +
+      `### Estudo de Caso (Resumo)\n` +
+      `- Situação real em ${area} e como ${topic} ajudou\n\n` +
+      `### Roadmap 30/60/90\n` +
+      `- 30: assimilação de conceitos\n` +
+      `- 60: aplicações guiadas\n` +
+      `- 90: autonomia básica\n\n` +
+      `### Referências\n` +
+      `- Guias introdutórios, glossários e cursos curtos\n`
     );
   }
   if (level === 'intermediate') {
     return (
-      header +
-      `Objetivo: aplicar ${topic} no contexto de ${sub}.\n\n` +
-      `- Checklist prático e pré-requisitos\n` +
-      `- Passo a passo operacional\n` +
-      `- KPIs e critérios de sucesso\n` +
-      `- Estudos de caso resumidos\n` +
-      `- Troubleshooting e boas práticas\n`
+      intro +
+      `### Objetivos\n` +
+      `- Aplicar ${topic} ao ângulo ${sub} em ${area}.\n` +
+      `- Detalhar o "como fazer" com melhores práticas.\n\n` +
+      `### Pré-requisitos\n` +
+      `- Ambiente, dados e ferramentas necessárias\n` +
+      `- Critérios de prontidão e checklist\n\n` +
+      `### Estrutura por Tópicos\n` +
+      `- Fluxo operacional ponta a ponta\n` +
+      `- Decisões e trade-offs\n` +
+      `- Padrões e antipadrões\n\n` +
+      `### KPIs e Sucesso\n` +
+      `- Métricas de performance, qualidade e custo\n` +
+      `- SLAs e observabilidade\n\n` +
+      `### Riscos e Troubleshooting\n` +
+      `- Falhas recorrentes e diagnósticos\n` +
+      `- Mitigações e planos de contingência\n\n` +
+      `### Estudo de Caso (Resumo)\n` +
+      `- Implementação prática de ${sub} em ${area}\n\n` +
+      `### Roadmap 30/60/90\n` +
+      `- 30: piloto controlado\n` +
+      `- 60: expansão e otimização\n` +
+      `- 90: consolidação e handover\n\n` +
+      `### Referências\n` +
+      `- Playbooks, frameworks e guias de operação\n`
     );
   }
   return (
-    header +
-    `Objetivo: análise crítica e visão avançada em ${sub}.\n\n` +
-    `- Tese principal e hipóteses\n` +
-    `- Métricas complexas e benchmarks\n` +
-    `- Riscos, compliance e governança\n` +
-    `- Estratégias de escala e automação\n` +
-    `- Roadmap 30/60/90 e visão contrarianista\n`
+    intro +
+    `### Objetivos\n` +
+    `- Produzir análise crítica e visão avançada em ${sub}.\n` +
+    `- Explorar benchmarks, governança e caminhos de escala.\n\n` +
+    `### Tese e Hipóteses\n` +
+    `- Tese central com premissas testáveis\n` +
+    `- Variáveis e cenários\n\n` +
+    `### Estrutura por Tópicos\n` +
+    `- Arquiteturas e estratégias de dados/processos\n` +
+    `- Benchmarks e métricas complexas\n` +
+    `- Modelos de decisão e custo/benefício\n\n` +
+    `### KPIs e Governança\n` +
+    `- Indicadores de risco, compliance e performance avançada\n` +
+    `- Comitês e políticas\n\n` +
+    `### Riscos e Compliance\n` +
+    `- Regulação aplicável e mitigação\n` +
+    `- Resiliência e continuidade\n\n` +
+    `### Estudo de Caso (Resumo)\n` +
+    `- Implementação em ${area} com resultados mensuráveis\n\n` +
+    `### Roadmap 30/60/90\n` +
+    `- 30: alinhamento executivo e arquitetura\n` +
+    `- 60: rollout com governança\n` +
+    `- 90: escala e automação\n\n` +
+    `### Referências\n` +
+    `- Whitepapers, benchmarks e relatórios de mercado\n`
   );
 }
 

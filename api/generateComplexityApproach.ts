@@ -19,17 +19,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const prompt = `
         ${personaInstruction}
 
-        Tarefa: Crie uma ESTRUTURA DE CONTEÚDO (Outline) para o seguinte tema:
+        Tarefa: Crie uma ABORDAGEM RICA E AMPLO OUTLINE em Markdown para o tema abaixo, obedecendo estritamente o nível (${level}).
         - Assunto: ${strategy.subject}
         - Tópico Base: ${strategy.topic}
         ${strategy.detailedAgenda ? `- Pauta/Diretriz: ${strategy.detailedAgenda}` : ''}
         - Sub-tópico (Ângulo): ${strategy.selectedSubTopic}
         - Contexto: ${strategy.expertise}
-        ${strategy.brandVoice ? `- Voz/Persona Específica a Seguir: ${strategy.brandVoice}` : ''}
+        ${strategy.audience ? `- Público-Alvo: ${strategy.audience}` : ''}
+        ${strategy.format ? `- Formato: ${strategy.format}` : ''}
+        ${strategy.brandVoice ? `- Voz/Persona: ${strategy.brandVoice}` : ''}
 
-        Gere um resumo estruturado de 300 palavras explicando como você vai abordar esse tema neste nível de complexidade (${level}).
-        Inclua os principais pontos que serão cobertos.
-        Não escreva o artigo ainda, apenas a estratégia de abordagem didática.
+        Estruture entre 600 e 900 palavras com seções claras:
+        1) Visão Geral e Objetivos
+        2) Fundamentos/Prática/Análise (conforme nível)
+        3) Estrutura por Tópicos com bullets detalhados
+        4) KPIs e critérios de sucesso
+        5) Riscos, limitações e compliance
+        6) Estudo de caso resumido aplicado ao Ângulo
+        7) Roadmap (30/60/90 dias) e próximos passos
+        8) Referências e materiais (se aplicável)
+
+        Use linguagem precisa e aporte técnico; não escreva o conteúdo final.
     `;
     const response = await ai.models.generateContent({ model, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
     return res.json({ text: response.text || '' });
