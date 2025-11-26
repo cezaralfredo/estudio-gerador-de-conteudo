@@ -1,7 +1,12 @@
 import { GoogleGenAI as GenAIClient, Type } from "@google/genai";
 import { ContentStrategy, StrategySchema, SubTopic, ComplexityLevel } from "../types";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+// TODO: Vite is not loading .env.local properly. Using hardcoded fallback temporarily.
+// Fix: Investigate why import.meta.env.VITE_GEMINI_API_KEY remains undefined
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA-0ECBgO7gTUDhBemlaOPvyfvjZqFQJ9g';
+if (!import.meta.env.VITE_GEMINI_API_KEY) {
+  console.warn('⚠️ API Key loaded from hardcoded fallback - .env.local not working');
+}
 const ai = new GenAIClient({ apiKey });
 
 // System instruction for the "Interviewer" persona
@@ -65,6 +70,11 @@ SAÍDA(Máx 200 chars):
 };
 
 export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubTopic[]> => {
+  if (!apiKey) {
+    console.error('❌ API key is missing');
+    throw new Error('API key is missing from environment variables');
+  }
+
   const model = 'gemini-2.5-flash';
 
   const prompt = `
@@ -109,12 +119,15 @@ export const generateSubTopics = async (strategy: ContentStrategy): Promise<SubT
       }
     });
 
-    if (!response.text) return [];
+    if (!response.text) {
+      console.error('❌ No text in response from Gemini API');
+      return [];
+    }
 
     const cleanJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
-    console.error("Error generating subtopics:", error);
+    console.error("❌ Error generating subtopics:", error);
     throw error;
   }
 };
