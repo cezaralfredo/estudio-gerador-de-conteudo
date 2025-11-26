@@ -1,5 +1,4 @@
 import { User } from '../types';
-import { sql } from './db';
 import bcrypt from 'bcryptjs';
 
 const CURRENT_USER_KEY = 'NEXUS_CURRENT_SESSION';
@@ -12,8 +11,9 @@ export const AuthService = {
 
   getAllUsers: async (): Promise<User[]> => {
     try {
-      const users = await sql`SELECT id, name, email, role, created_at as "createdAt" FROM users`;
-      return users as unknown as User[];
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      return (data?.users || []) as User[];
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
       return [];
@@ -22,84 +22,52 @@ export const AuthService = {
 
   register: async (name: string, email: string, pass: string): Promise<{ success: boolean; message?: string; user?: User }> => {
     try {
-      // Check if user exists
-      const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
-      if (existing.length > 0) {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
+        return { success: true, user: data.user };
+      }
+      return { success: false, message: data.message || 'Falha ao registrar.' };
+    } catch (error) {
+      const userStr = localStorage.getItem(`USER_${email}`);
+      if (userStr) {
         return { success: false, message: 'Este e-mail já está cadastrado.' };
       }
-
-      // Create user
-      // Hash de senha no cliente (melhor do que plaintext; ideal é no servidor)
       const passwordHash = await bcrypt.hash(pass, 10);
-      const [newUser] = await sql`
-        INSERT INTO users (name, email, password_hash, role)
-        VALUES (${name}, ${email}, ${passwordHash}, 'user')
-        RETURNING id, name, email, role, created_at as "createdAt"
-      `;
-
-      const user: User = {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role as 'user' | 'admin',
-        createdAt: newUser.createdAt
-      };
-
-      // Auto login
+      const user: User = { id: crypto.randomUUID(), name, email, role: 'user', createdAt: new Date().toISOString() } as User;
+      localStorage.setItem(`USER_${email}`, JSON.stringify({ ...user, passwordHash }));
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-
       return { success: true, user };
-    } catch (error) {
-      console.error("Erro ao registrar:", error);
-      return { success: false, message: 'Erro ao criar conta. Tente novamente.' };
     }
   },
 
   login: async (email: string, pass: string): Promise<{ success: boolean; message?: string; user?: User }> => {
     try {
-      const rows = await sql`
-        SELECT id, name, email, role, created_at as "createdAt", password_hash 
-        FROM users 
-        WHERE email = ${email}
-      `;
-
-      if (rows.length === 0) {
-        return { success: false, message: 'Credenciais inválidas.' };
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
+        return { success: true, user: data.user };
       }
-
-      const row = rows[0] as any;
-      let passwordMatch = false;
-      try {
-        passwordMatch = await bcrypt.compare(pass, row.password_hash);
-      } catch (_) {
-        passwordMatch = false;
-      }
-      // Fallback: se o banco possuir senhas em plaintext, aceite e faça upgrade para hash
-      if (!passwordMatch && row.password_hash === pass) {
-        const newHash = await bcrypt.hash(pass, 10);
-        await sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${row.id}`;
-        passwordMatch = true;
-      }
-      if (!passwordMatch) {
-        return { success: false, message: 'Credenciais inválidas.' };
-      }
-
-      const user: User = {
-        id: row.id,
-        name: row.name,
-        email: row.email,
-        role: row.role,
-        createdAt: row.createdAt
-      };
-
-      // Update last login
-      await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;
-
+      return { success: false, message: data.message || 'Credenciais inválidas.' };
+    } catch (error) {
+      const userStr = localStorage.getItem(`USER_${email}`);
+      if (!userStr) return { success: false, message: 'Credenciais inválidas.' };
+      const stored = JSON.parse(userStr);
+      const ok = await bcrypt.compare(pass, stored.passwordHash).catch(() => false);
+      if (!ok) return { success: false, message: 'Credenciais inválidas.' };
+      const user: User = { id: stored.id, name: stored.name, email: stored.email, role: stored.role, createdAt: stored.createdAt };
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
       return { success: true, user };
-    } catch (error) {
-      console.error("Erro ao login:", error);
-      return { success: false, message: 'Erro ao conectar ao servidor.' };
     }
   },
 
@@ -115,8 +83,13 @@ export const AuthService = {
   // Admin methods
   deleteUser: async (id: string): Promise<boolean> => {
     try {
-      await sql`DELETE FROM users WHERE id = ${id}`;
-      return true;
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      return Boolean(data?.success);
     } catch (e) {
       console.error(e);
       return false;
@@ -125,8 +98,13 @@ export const AuthService = {
 
   updateUserRole: async (id: string, role: 'admin' | 'user'): Promise<boolean> => {
     try {
-      await sql`UPDATE users SET role = ${role} WHERE id = ${id}`;
-      return true;
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, role })
+      });
+      const data = await res.json();
+      return Boolean(data?.success);
     } catch (e) {
       console.error(e);
       return false;

@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenAI as GenAIClient, Type } from '@google/genai';
+import bcrypt from 'bcryptjs';
+import { neon } from '@neondatabase/serverless';
 
 const app = express();
 app.use(cors());
@@ -12,6 +14,12 @@ if (!apiKey) {
   console.warn('⚠️ Nenhuma chave de API configurada. Defina GOOGLE_API_KEY ou GEMINI_API_KEY no ambiente.');
 }
 const ai = new GenAIClient({ apiKey });
+
+const DATABASE_URL = process.env.DATABASE_URL || process.env.VITE_DATABASE_URL;
+let sql;
+if (DATABASE_URL) {
+  sql = neon(DATABASE_URL);
+}
 
 // System personas (mantidas como no frontend)
 const INTERVIEWER_SYSTEM_INSTRUCTION = `
@@ -42,6 +50,97 @@ IDIOMA DE SAÍDA: PORTUGUÊS DO BRASIL.
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, hasKey: Boolean(apiKey) });
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    if (!sql) return res.status(500).json({ success: false, message: 'DB indisponível' });
+    const { name, email, password } = req.body;
+    const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
+    if (existing.length > 0) {
+      return res.json({ success: false, message: 'Este e-mail já está cadastrado.' });
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    const [newUser] = await sql`
+      INSERT INTO users (name, email, password_hash, role)
+      VALUES (${name}, ${email}, ${passwordHash}, 'user')
+      RETURNING id, name, email, role, created_at as "createdAt"
+    `;
+    res.json({ success: true, user: newUser });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, message: 'Erro ao criar conta.' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    if (!sql) return res.status(500).json({ success: false, message: 'DB indisponível' });
+    const { email, password } = req.body;
+    const rows = await sql`
+      SELECT id, name, email, role, created_at as "createdAt", password_hash
+      FROM users WHERE email = ${email}
+    `;
+    if (rows.length === 0) {
+      return res.json({ success: false, message: 'Credenciais inválidas.' });
+    }
+    const row = rows[0];
+    let passwordMatch = false;
+    try {
+      passwordMatch = await bcrypt.compare(password, row.password_hash);
+    } catch (_) {
+      passwordMatch = false;
+    }
+    if (!passwordMatch && row.password_hash === password) {
+      const newHash = await bcrypt.hash(password, 10);
+      await sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${row.id}`;
+      passwordMatch = true;
+    }
+    if (!passwordMatch) {
+      return res.json({ success: false, message: 'Credenciais inválidas.' });
+    }
+    await sql`UPDATE users SET last_login = NOW() WHERE id = ${row.id}`;
+    const user = { id: row.id, name: row.name, email: row.email, role: row.role, createdAt: row.createdAt };
+    res.json({ success: true, user });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, message: 'Erro ao conectar ao servidor.' });
+  }
+});
+
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    if (!sql) return res.status(500).json({ success: false, message: 'DB indisponível' });
+    const users = await sql`SELECT id, name, email, role, created_at as "createdAt" FROM users`;
+    res.json({ success: true, users });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, message: 'Erro ao buscar usuários.' });
+  }
+});
+
+app.patch('/api/admin/users', async (req, res) => {
+  try {
+    if (!sql) return res.status(500).json({ success: false, message: 'DB indisponível' });
+    const { id, role } = req.body;
+    await sql`UPDATE users SET role = ${role} WHERE id = ${id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, message: 'Erro ao atualizar função.' });
+  }
+});
+
+app.delete('/api/admin/users', async (req, res) => {
+  try {
+    if (!sql) return res.status(500).json({ success: false, message: 'DB indisponível' });
+    const { id } = req.body;
+    await sql`DELETE FROM users WHERE id = ${id}`;
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, message: 'Erro ao excluir usuário.' });
+  }
 });
 
 app.post('/api/generateDetailedAgenda', async (req, res) => {
