@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContentStrategy, ContentStatus } from '../types';
 import { Sparkles, Target, Mic, FileText, Search, BookOpen, Layers, Briefcase, Calendar as CalendarIcon, Save, Loader2 } from 'lucide-react';
 import { generateDetailedAgenda } from '../services/geminiService';
@@ -14,6 +14,20 @@ interface Props {
 
 const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, onSaveDraft, onBackToCalendar }) => {
   const [generatingAgenda, setGeneratingAgenda] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        setAiAvailable(Boolean(data?.hasKey));
+      } catch (_) {
+        setAiAvailable(false);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleChange = (field: keyof ContentStrategy, value: any) => {
     setStrategy(prev => ({ ...prev, [field]: value }));
@@ -154,6 +168,7 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
                     <label className="flex items-center gap-2 text-sm font-medium text-brand-500 uppercase tracking-wider">
                         <FileText size={16} /> Pauta Detalhada
                     </label>
+                    <div className="flex items-center gap-3">
                     <button 
                         onClick={handleGenerateAgenda}
                         disabled={generatingAgenda || !strategy.topic}
@@ -163,6 +178,10 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
                         {generatingAgenda ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12} />}
                         {generatingAgenda ? 'Gerando...' : 'Gerar com IA'}
                     </button>
+                    {aiAvailable === false && (
+                      <span className="text-[11px] text-amber-500">IA desativada — usando fallback</span>
+                    )}
+                    </div>
                 </div>
                 <textarea 
                     value={strategy.detailedAgenda || ''}

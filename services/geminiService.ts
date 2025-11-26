@@ -35,11 +35,19 @@ export const generateDetailedAgenda = async (topic: string, subject: string, exp
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic, subject, expertise })
     });
+    if (!res.ok) {
+      const base = `Pauta: ${topic} em ${subject} para ${expertise}. Detalhar impactos, métricas e exemplos práticos.`;
+      return base.slice(0, 200);
+    }
     const data = await res.json();
-    return data?.text?.trim() || "";
+    const text = (data?.text || '').trim();
+    if (text) return text;
+    const base = `Pauta: ${topic} em ${subject} para ${expertise}. Detalhar impactos, métricas e exemplos práticos.`;
+    return base.slice(0, 200);
   } catch (e) {
     console.error("Error generating agenda:", e);
-    return "";
+    const base = `Pauta: ${topic} em ${subject} para ${expertise}. Detalhar impactos, métricas e exemplos práticos.`;
+    return base.slice(0, 200);
   }
 };
 
