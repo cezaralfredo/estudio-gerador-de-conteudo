@@ -109,13 +109,57 @@ export const generateComplexityApproach = async (strategy: ContentStrategy, leve
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ strategy, level })
     });
+    if (!res.ok) {
+      return buildHeuristicApproach(strategy, level);
+    }
     const data = await res.json();
-    return data?.text || '';
+    const text = (data?.text || '').trim();
+    return text || buildHeuristicApproach(strategy, level);
   } catch (e) {
     console.error('❌ Error generating approach:', e);
-    return '';
+    return buildHeuristicApproach(strategy, level);
   }
 };
+
+function buildHeuristicApproach(strategy: ContentStrategy, level: ComplexityLevel): string {
+  const subject = strategy.subject || 'Assunto';
+  const topic = strategy.topic || 'Tópico';
+  const sub = strategy.selectedSubTopic || 'Ângulo';
+  const area = strategy.expertise || 'Área';
+  const header = `## Abordagem (${level})\n\n`;
+
+  if (level === 'basic') {
+    return (
+      header +
+      `Objetivo: explicar fundamentos de ${topic} em ${area}.\n\n` +
+      `- Definições-chave e escopo do tema\n` +
+      `- Por que importa para ${subject} (${area})\n` +
+      `- Conceitos básicos com exemplos simples\n` +
+      `- Erros comuns de iniciantes\n` +
+      `- Próximos passos e materiais de referência\n`
+    );
+  }
+  if (level === 'intermediate') {
+    return (
+      header +
+      `Objetivo: aplicar ${topic} no contexto de ${sub}.\n\n` +
+      `- Checklist prático e pré-requisitos\n` +
+      `- Passo a passo operacional\n` +
+      `- KPIs e critérios de sucesso\n` +
+      `- Estudos de caso resumidos\n` +
+      `- Troubleshooting e boas práticas\n`
+    );
+  }
+  return (
+    header +
+    `Objetivo: análise crítica e visão avançada em ${sub}.\n\n` +
+    `- Tese principal e hipóteses\n` +
+    `- Métricas complexas e benchmarks\n` +
+    `- Riscos, compliance e governança\n` +
+    `- Estratégias de escala e automação\n` +
+    `- Roadmap 30/60/90 e visão contrarianista\n`
+  );
+}
 
 export const analyzeBriefingState = async (
   strategy: ContentStrategy,
