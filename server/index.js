@@ -9,6 +9,15 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
+// Global error handler for JSON parse errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Bad JSON:', err.message);
+    return res.status(400).json({ success: false, message: 'Invalid JSON payload' });
+  }
+  next();
+});
+
 const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 if (!apiKey) {
   console.warn('⚠️ Nenhuma chave de API configurada. Defina GOOGLE_API_KEY ou GEMINI_API_KEY no ambiente.');
