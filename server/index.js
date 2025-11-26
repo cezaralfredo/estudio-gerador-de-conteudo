@@ -248,7 +248,7 @@ app.post('/api/generateComplexityApproach', async (req, res) => {
         ${personaInstruction}
 
         Tarefa: Atue como FILTRO EDITORIAL e ARQUITETO DE CONTEÚDO.
-        Seu objetivo é gerar uma ESTRATÉGIA DE ABORDAGEM SUGERIDA que seja estruturada, relevante e robusta.
+        O usuário exige uma ESTRATÉGIA DE ABORDAGEM SUGERIDA que traga INFORMAÇÕES COMPLETAS, estruturadas e robustas.
 
         Contexto:
         - Assunto Principal: ${strategy.subject}
@@ -260,10 +260,10 @@ app.post('/api/generateComplexityApproach', async (req, res) => {
         ${strategy.format ? `- Formato Alvo: ${strategy.format}` : ''}
         ${strategy.brandVoice ? `- Voz/Persona: ${strategy.brandVoice}` : ''}
 
-        MODO FILTRO (Prioridade Máxima):
-        1. Analise as intenções do usuário e o escopo do sub-tópico.
-        2. Filtre ruídos: descarte informações periféricas ou genéricas.
-        3. Traga apenas o que é essencial, coerente e de alto valor para o nível (${level}).
+        MODO FILTRO (Rigor e Completude):
+        1. Analise profundamente as intenções do usuário para este sub-tópico.
+        2. Filtre e elimine o irrelevante.
+        3. Entregue conteúdo COMPLETO e RELEVANTE: não apenas tópicos, mas a explicação densa e coerente deles.
 
         Regras de Profundidade (${level}):
         - BASIC: Fundamentos sólidos, definições claras ("O que", "Porquê"), analogias didáticas.
@@ -272,29 +272,28 @@ app.post('/api/generateComplexityApproach', async (req, res) => {
 
         ESTRUTURA DE SAÍDA OBRIGATÓRIA (Markdown):
 
-        ## 1. Assunto Principal
-        - Defina o foco exato da abordagem.
-        - Justifique a relevância para o público e área de atuação.
+        ## 1. Assunto Principal e Contexto
+        - Definição precisa do escopo abordado.
+        - Justificativa de relevância para o público.
 
         ## 2. Estrutura de Tópicos e Sub-tópicos
-        - Apresente uma hierarquia lógica (Tópicos > Sub-tópicos).
-        - Garanta que cada item tenha um propósito claro na narrativa.
+        - Hierarquia lógica (H2, H3).
+        - Organize o raciocínio de forma progressiva e didática.
 
-        ## 3. Parágrafos Explicativos (Robustos e Contextuais)
-        - Esta é a seção mais importante.
-        - Escreva parágrafos densos e bem articulados para cada ponto chave.
-        - Conecte os conceitos (Coesão).
-        - Use dados, argumentos e exemplos alinhados ao nível ${level}.
-        - Demonstre autoridade no assunto.
+        ## 3. Parágrafos Explicativos e Robustos (O CORAÇÃO DA ESTRATÉGIA)
+        - Para cada tópico/sub-tópico principal, escreva um parágrafo completo e argumentativo.
+        - Não use placeholders. Traga a informação real, o dado, o argumento, a técnica.
+        - Conecte os pontos (coesão e lógica).
+        - Demonstre profundidade compatível com o nível ${level}.
 
-        ## 4. Notas de Direcionamento (Filtro)
-        - Justifique escolhas editoriais (ex: "Focamos em X pois Y é obsoleto").
-        - Aponte conexões lógicas críticas para o redator final.
+        ## 4. Notas de Direcionamento Editorial
+        - Observações sobre o que foi filtrado/focado e porquê.
+        - Orientações de tom e estilo para a redação final.
 
         Instruções Finais:
-        - Use Markdown limpo.
-        - Seja direto e profissional.
-        - NÃO escreva o artigo final ainda, mas forneça a "espinha dorsal" detalhada e argumentada.
+        - Use Markdown limpo e bem formatado.
+        - Seja direto, profissional e denso.
+        - O objetivo é que esta estratégia já contenha todo o valor intelectual necessário.
         - IDIOMA: Português do Brasil.
     `;
     const response = await ai.models.generateContent({ model, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
