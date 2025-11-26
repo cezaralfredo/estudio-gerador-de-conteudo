@@ -10,7 +10,7 @@ import AuthScreen from './components/AuthScreen';
 import AdminUserList from './components/AdminUserList';
 import { StorageService } from './services/storageService';
 import { AuthService } from './services/authService';
-import { PenTool, Calendar as CalendarIcon, LogOut, Shield, User as UserIcon } from 'lucide-react';
+import { PenTool, Calendar as CalendarIcon, LogOut, Shield, User as UserIcon, Info } from 'lucide-react';
 
 const App: React.FC = () => {
   // --- Auth State ---
@@ -347,9 +347,12 @@ const App: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         {stage === AppStage.CALENDAR && (
-          <div className="mb-4 text-slate-400 text-sm">
-            <p>Clique uma data no calendário e forneça dados relevantes para gerar seu conteúdo.</p>
-            <p className="mt-1">A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.</p>
+          <div className="mb-6 rounded-xl border border-brand-600 bg-brand-900/20 text-brand-200 p-4 flex items-start gap-3 shadow-lg">
+            <div className="bg-brand-600/80 text-white rounded-md p-2"><Info size={16} /></div>
+            <div>
+              <p className="text-sm font-semibold">Clique uma data no calendário e forneça dados relevantes para gerar seu conteúdo.</p>
+              <p className="text-xs mt-1 opacity-90">A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.</p>
+            </div>
           </div>
         )}
 

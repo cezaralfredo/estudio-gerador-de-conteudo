@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ContentStrategy, ContentStatus } from '../types';
-import { Sparkles, Target, Mic, FileText, Search, BookOpen, Layers, Briefcase, Calendar as CalendarIcon, Save, Loader2 } from 'lucide-react';
+import { Sparkles, Target, Mic, FileText, Search, BookOpen, Layers, Briefcase, Calendar as CalendarIcon, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { generateDetailedAgenda } from '../services/geminiService';
 
 interface Props {
@@ -74,8 +74,9 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
             <h2 className="text-3xl font-serif font-bold text-white">Estúdio Gerador de Conteúdo</h2>
             <p className="text-slate-400 text-sm">Centralize o planejamento, status e estratégia do seu conteúdo.</p>
         </div>
-        <div className="text-[11px] text-slate-500">
-          A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.
+        <div className="flex items-start gap-2 bg-amber-900/20 border border-amber-700 text-amber-300 px-3 py-2 rounded-md shadow">
+          <AlertTriangle size={14} className="mt-[2px]" />
+          <span className="text-xs">A IA gratuita tem limite de uso, fale com o suporte para uso de IA paga.</span>
         </div>
       </div>
 
