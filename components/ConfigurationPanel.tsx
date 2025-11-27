@@ -190,36 +190,6 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
                 </div>
             </div>
 
-            {/* SEO & Brand Voice (Moved Here) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
-                 {/* Keywords */}
-                 <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        <Search size={12} /> Palavras-chave (SEO)
-                    </label>
-                    <input 
-                        type="text" 
-                        value={strategy.keywords || ''}
-                        onChange={(e) => handleChange('keywords', e.target.value)}
-                        placeholder="ex: tecnologia, inovação"
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-brand-500 outline-none"
-                    />
-                </div>
-
-                {/* Brand Voice */}
-                 <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        <Mic size={12} /> Voz da Marca / Persona
-                    </label>
-                    <textarea 
-                        value={strategy.brandVoice || ''}
-                        onChange={(e) => handleChange('brandVoice', e.target.value)}
-                        placeholder="ex: 'Fale como Steve Jobs'"
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-brand-500 outline-none resize-none h-[52px]"
-                    />
-                </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Audience */}
                 <div className="space-y-2">
@@ -289,6 +259,36 @@ const ConfigurationPanel: React.FC<Props> = ({ strategy, setStrategy, onNext, on
                         onChange={(e) => handleChange('goal', e.target.value)}
                         placeholder="ex: Educar, Converter..."
                         className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-1 focus:ring-brand-500 outline-none"
+                    />
+                </div>
+            </div>
+
+            {/* SEO & Brand Voice (Moved Here) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+                 {/* Keywords */}
+                 <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <Search size={12} /> Palavras-chave (SEO) <span className="text-slate-500 font-normal normal-case">(Opcional)</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        value={strategy.keywords || ''}
+                        onChange={(e) => handleChange('keywords', e.target.value)}
+                        placeholder="ex: tecnologia, inovação"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-brand-500 outline-none"
+                    />
+                </div>
+
+                {/* Brand Voice */}
+                 <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <Mic size={12} /> Voz da Marca / Persona <span className="text-slate-500 font-normal normal-case">(Opcional)</span>
+                    </label>
+                    <textarea 
+                        value={strategy.brandVoice || ''}
+                        onChange={(e) => handleChange('brandVoice', e.target.value)}
+                        placeholder="ex: 'Fale como Steve Jobs'"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-brand-500 outline-none resize-none h-[52px]"
                     />
                 </div>
             </div>
